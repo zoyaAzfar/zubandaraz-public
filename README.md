@@ -1,5 +1,5 @@
-# zubandaraz-public
-A crowd-sourced dictionary exploring gender &amp; language in south asia 
+# Zuban Daraz Dictionary
+A crowd-sourced dictionary exploring gender &amp; language in South Asia. 
 
 The project aims to collect words whose meanings or connotations are connected to gender, while giving people a place to contribute entries and improve existing ones. Our dictionary is always updating with new information and stories.
 
