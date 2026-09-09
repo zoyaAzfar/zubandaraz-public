@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{% block title %}Zuban Daraz {% endblock %}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Noto+Nastaliq+Urdu:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Sans+Gurmukhi:wght@400;500;600&family=Noto+Sans+Tamil:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&icon_names=search" />
+
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="logo" href="{{ url_for('home') }}">
+      <span class="logo-mark">ز</span>
+      <span class="logo-word">Zuban Daraz</span>
+    </a>
+    <form class="search" action="{{ url_for('browse') }}" method="get">
+      <label class="visually-hidden" for="searchInput">Search the archive</label>
+      <select name="language" aria-label="Filter by language">
+        <option value="">All languages</option>
+        {% for lang in ["Urdu", "Hindi", "Punjabi", "Bengali", "Tamil"] %}
+        <option {% if request.args.get('language') == lang %}selected{% endif %}>{{ lang }}</option>
+        {% endfor %}
+      </select>
+      <input id="searchInput" name="q" type="text" placeholder="Search for a word…" value="{{ request.args.get('q', '') }}" />
+        <button type="submit" aria-label="Search">
+          <span class="material-symbols-outlined">search</span>
+        </button>    
+    </form>
+    <nav class="main-nav">
+      <a class="nav-link {% if request.endpoint == 'home' %}active{% endif %}" href="{{ url_for('home') }}">Home</a>
+      <a class="nav-link {% if request.endpoint == 'browse' %}active{% endif %}" href="{{ url_for('browse') }}">Browse</a>
+      <a class="nav-link {% if request.endpoint == 'about_page' %}active{% endif %}" href="{{ url_for('about_page') }}">About</a>
+      <a class="btn-submit" href="{{ url_for('submit_page') }}">Submit a word</a>
+    </nav>
+  </div>
+</header>
+
+{% block content %}{% endblock %}
+
+<footer>
+        <h1>You've reached the end.</h1>
+        <p> Zuban Daraz - 2026</p>
+            <a href="https://github.com" target="_blank" rel="noopener">Source code</a> · 
+            <a href="{{ url_for('submit_page') }}">Contribute a word</a> · 
+            <a href="{{ url_for('mod_policy') }}">Moderation policy</a>
+</footer>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

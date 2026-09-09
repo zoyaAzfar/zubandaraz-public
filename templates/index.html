@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Zuban Daraz — an archive of gendered words{% endblock %}
+
+{% block content %}
+<main class="home">
+
+  <section class="hero">
+    <div class="hero-word-block">
+    <!--  <p class="hero-eyebrow">a dictionary {% if submission_count %} · {{ submission_count }} words submitted so far{% endif %}</p>--> 
+      <h1 class="hero-word">
+        <span class="hero-word-text">Zuban Daraz </span>
+        <span class="hero-translit">[adj.]: big-mouthed, arrogant, disrespectful in speech.</span>
+      </h1>
+    </div>
+    <div class="hero-copy">
+      <p class="mission">Zuban Daraz is a sociolinguistics project dedicated to exploring the relationship of South Asian people of all genders with language. Through anonymous submissions, we document examples of words which play a key role in how people of different genders are referred to - and percieved - by those around them, across cultures and language. These words do not necessarily need to be insults or taboo words; instead, we are looking for words that hold special significance for you.  </p>
+     <!--
+      <div class="hero-actions">
+        <a class="btn-primary" href="{{ url_for('browse') }}">Browse the archive</a>
+        <a class="btn-secondary" href="{{ url_for('submit_page') }}">Add a word</a>
+      </div>
+
+      --> 
+
+      
+    </div>
+  </section>
+  {% if word_of_day %}
+{% set wod_script, wod_rtl = detect_script(word_of_day.word) %}
+<section class="wotd">
+  <div class="section-heading-row">
+    <p class="section-label">Word of the day</p>
+    <a class="link-btn" href="{{ url_for('entry_detail', slug=word_of_day.slug) }}">Read the full entry</a>
+  </div>
+  <article class="wotd-card">
+    <div class="wotd-word-col">
+      <p class="wotd-script script-{{ wod_script }}" dir="{{ 'rtl' if wod_rtl else 'ltr' }}">{{ word_of_day.word }}</p>
+      {% if word_of_day.transliteration %}<p class="wotd-translit">{{ word_of_day.transliteration }}</p>{% endif %}
+      <div class="wotd-tags">
+        <span class="tag">{{ word_of_day.language }}</span>
+        {% if word_of_day.dialect %}<span class="tag tag-teal">{{ word_of_day.dialect }}</span>{% endif %}
+      </div>
+    </div>
+    <div class="wotd-body">
+      {% if word_of_day.literal_definition %}
+      <p class="wotd-gloss">{{ word_of_day.literal_definition }}</p>
+      {% endif %}
+
+      <div class="wotd-meta-details">
+        {% if word_of_day.origin %}
+        <p class="wotd-meta-item">
+          <strong>Origin:</strong> {{ word_of_day.origin }}
+        </p>
+        {% endif %}
+
+        {% if word_of_day.etymology %}
+        <p class="wotd-meta-item">
+          <strong>Etymology:</strong> {{ word_of_day.etymology }}
+        </p>
+        {% endif %}
+      </div>
+
+      {% if word_of_day_story_count %}
+      <div class="wotd-foot">
+        <span class="resonance">{{ word_of_day_story_count }} {{ "person has" if word_of_day_story_count == 1 else "people have" }} added their own story to this word</span>
+      </div>
+      {% endif %}
+    </div>
+  </article>
+</section>
+{% endif %}
+
+  
+  <section class="browse-preview">
+    <div class="section-heading-row">
+      <p class="section-label">From the archive</p>
+      <a class="link-btn" href="{{ url_for('browse') }}">See all entries</a>
+    </div>
+    {% if entries %}
+    <div class="entry-grid">
+      {% for entry in entries %}
+      {% set e_script, e_rtl = detect_script(entry.word) %}
+      <a class="entry-card" href="{{ url_for('entry_detail', slug=entry.slug) }}">
+        <p class="script script-{{ e_script }}" dir="{{ 'rtl' if e_rtl else 'ltr' }}">{{ entry.word }}</p>
+        {% if entry.transliteration %}<p class="translit">{{ entry.transliteration }}</p>{% endif %}
+        {% if entry.literal_definition %}<p class="gloss">{{ entry.literal_definition }}</p>{% endif %}
+        <div class="card-tags">
+          <span class="tag">{{ entry.language }}</span>
+          {% if entry.dialect %}<span class="tag tag-teal">{{ entry.dialect }}</span>{% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-note">No approved words yet. Be the first to <a href="{{ url_for('submit_page') }}">submit one</a>.</p>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}
+

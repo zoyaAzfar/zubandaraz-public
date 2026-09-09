@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="admin">
+    <h1>Admin Dashboard</h1>
+
+    <section class="admin-section">
+        <h2>Pending New Entries</h2>
+
+        {% for entry in pending %}
+            <div class="admin-entry-card" style="border: 1px solid #ccc; padding: 20px; margin-bottom: 25px; border-radius: 8px;">
+                <h2>
+                    {{ entry.word }} <small>({{ entry.language }})</small>
+                </h2>
+
+                <p><strong>Literal Definition:</strong><br>{{ entry.literal_definition or "—" }}</p>
+                <p><strong>Etymology:</strong><br>{{ entry.etymology or "—" }}</p>
+                <p><strong>Story:</strong><br>{{ entry.story }}</p>
+                <hr>
+
+                <form action="/approve/{{ entry.id }}" method="POST">
+                    <h3>Review Details</h3>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <label for="language-{{ entry.id }}"><strong>Language:</strong></label><br>
+                        <input type="text" id="language-{{ entry.id }}" name="language" value="{{ entry.language or '' }}" placeholder="e.g. English, Spanish">
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label for="etymology-{{ entry.id }}"><strong>Etymology:</strong></label><br>
+                        <input type="text" id="etymology-{{ entry.id }}" name="etymology" value="{{ entry.etymology or '' }}" placeholder="e.g. From Latin...">
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label for="origin-{{ entry.id }}"><strong>Origin:</strong></label><br>
+                        <input type="text" id="origin-{{ entry.id }}" name="origin" value="{{ entry.origin or '' }}" placeholder="e.g. Latin, Old Norse">
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label for="dialect-{{ entry.id }}"><strong>Dialect:</strong></label><br>
+                        <input type="text" id="dialect-{{ entry.id }}" name="dialect" value="{{ entry.dialect or '' }}" placeholder="e.g. Yorkshire, Southern US">
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label for="source-{{ entry.id }}"><strong>Source:</strong></label><br>
+                        <input type="text" id="source-{{ entry.id }}" name="source" value="{{ entry.source or '' }}" placeholder="e.g. Oral tradition, Book Title">
+                    </div>
+
+                    <button type="submit" class="submit-btn" style="background-color: #4CAF50; color: white; padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px;">
+                        Approve & Save Details
+                    </button>
+                </form>
+
+                <form action="/delete/{{ entry.id }}" method="POST" style="margin-top: 10px;">
+                    <button type="submit" class="submit-btn" style="background-color: #f44336; color: white; padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px;">
+                        Reject & Delete
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <p>No pending new entries to review.</p>
+        {% endfor %}
+    </section>
+
+    <section class="admin-section" style="margin-top: 50px;">
+        <h2>Pending Edits</h2>
+
+        {% for edit in pending_edits %}
+            <div class="admin-edit-card" style="border: 1px solid #999; padding: 20px; margin-bottom: 25px; border-radius: 8px;">
+                <h2>Edit Request: {{ edit.entry.word }}</h2>
+                <p><strong>Language:</strong> {{ edit.entry.language }}</p>
+                {% if edit.submitted_by %}
+                    <p><strong>Submitted by:</strong> {{ edit.submitted_by }}</p>
+                {% endif %}
+                <hr>
+
+                <h3>Proposed Changes</h3>
+
+                {% if edit.word is not none %}
+                    <div style="margin-bottom: 15px;">
+                        <strong>Word</strong>
+                        <p><strong>Current:</strong> {{ edit.entry.word }}</p>
+                        <p><strong>Proposed:</strong> {{ edit.word }}</p>
+                    </div>
+                {% endif %}
+
+                {% if edit.language is not none %}
+                    <div style="margin-bottom: 15px;">
+                        <strong>Language</strong>
+                        <p><strong>Current:</strong> {{ edit.entry.language }}</p>
+                        <p><strong>Proposed:</strong> {{ edit.language }}</p>
+                    </div>
+                {% endif %}
+
+                {% if edit.literal_definition is not none %}
+                    <div style="margin-bottom: 15px;">
+                        <strong>Literal Definition</strong>
+                        <p><strong>Current:</strong><br>{{ edit.entry.literal_definition or "—" }}</p>
+                        <p><strong>Proposed:</strong><br>{{ edit.literal_definition }}</p>
+                    </div>
+                {% endif %}
+
+                {% if edit.etymology is not none %}
+                    <div style="margin-bottom: 15px;">
+                        <strong>Etymology</strong>
+                        <p><strong>Current:</strong><br>{{ edit.entry.etymology or "—" }}</p>
+                        <p><strong>Proposed:</strong><br>{{ edit.etymology }}</p>
+                    </div>
+                {% endif %}
+
+                {% if edit.story is not none %}
+                    <div style="margin-bottom: 15px;">
+                        <strong>Story</strong>
+                        <p><strong>Current:</strong><br>{{ edit.entry.story }}</p>
+                        <p><strong>Proposed:</strong><br>{{ edit.story }}</p>
+                    </div>
+                {% endif %}
+
+                {% if edit.origin is not none %}
+                    <div style="margin-bottom: 15px;">
+                        <strong>Origin</strong>
+                        <p><strong>Current:</strong> {{ edit.entry.origin or "—" }}</p>
+                        <p><strong>Proposed:</strong> {{ edit.origin }}</p>
+                    </div>
+                {% endif %}
+
+                {% if edit.dialect is not none %}
+                    <div style="margin-bottom: 15px;">
+                        <strong>Dialect</strong>
+                        <p><strong>Current:</strong> {{ edit.entry.dialect or "—" }}</p>
+                        <p><strong>Proposed:</strong> {{ edit.dialect }}</p>
+                    </div>
+                {% endif %}
+
+                {% if edit.source is not none %}
+                    <div style="margin-bottom: 15px;">
+                        <strong>Source</strong>
+                        <p><strong>Current:</strong> {{ edit.entry.source or "—" }}</p>
+                        <p><strong>Proposed:</strong> {{ edit.source }}</p>
+                    </div>
+                {% endif %}
+
+                <hr>
+
+                <form action="/approve_edit/{{ edit.id }}" method="POST" style="display: inline-block;">
+                    <button type="submit" class="submit-btn" style="background-color: #4CAF50; color: white; padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px;">
+                        Approve Edit
+                    </button>
+                </form>
+
+                <form action="/reject_edit/{{ edit.id }}" method="POST" style="display: inline-block; margin-left: 10px;">
+                    <button type="submit" class="submit-btn" style="background-color: #f44336; color: white; padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px;">
+                        Reject Edit
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <p>No pending edits to review.</p>
+        {% endfor %}
+    </section>
+
+    <section class="admin-section" style="margin-top: 50px;">
+        <h2>Pending Community Stories</h2>
+
+        {% for story in pending_stories %}
+            <div class="admin-story-card" style="border: 1px solid #ccc; padding: 20px; margin-bottom: 25px; border-radius: 8px; background-color: #fafafa;">
+                <h2>Word: {{ story.word }}</h2>
+                <p>
+                    <strong>Story Content:</strong><br>
+                    <span style="white-space: pre-wrap;">{{ story.content }}</span>
+                </p>
+                <p><strong>Submitted by:</strong> {{ story.submitted_by or "Anonymous" }}</p>
+                <p style="font-size: 0.9em; color: #777;"><strong>Submitted on:</strong> {{ story.created_at }}</p>
+                <hr style="margin: 15px 0;">
+
+                <form action="/approve_story/{{ story.id }}" method="POST" style="display: inline-block;">
+                    <button type="submit" class="submit-btn" style="background-color: #4CAF50; color: white; padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px;">
+                        Approve Story
+                    </button>
+                </form>
+
+                <form action="/reject_story/{{ story.id }}" method="POST" style="display: inline-block; margin-left: 10px;">
+                    <button type="submit" class="submit-btn" style="background-color: #f44336; color: white; padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px;">
+                        Reject & Delete
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <p>No pending stories to review.</p>
+        {% endfor %}
+    </section>
+
+</div>
+
+{% endblock %}

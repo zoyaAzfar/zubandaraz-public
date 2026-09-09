@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Browse the archive — Zuban Daraz{% endblock %}
+
+{% block content %}
+<div class="browse-full">
+
+  <div class="browse-heading">
+    <h1 class="browse-title">Browse the archive.</h1>
+    <p class="browse-sub">Every entry is submitted anonymously and reviewed before published. Read the community stories on any word to see what it means to different people.</p>
+  </div>
+
+  <div class="browse-toolbar">
+    <p class="result-count">
+      {{ entries|length }} {{ "entry" if entries|length == 1 else "entries" }}{% if q %} matching &ldquo;{{ q }}&rdquo;{% endif %}{% if language %} in {{ language }}{% endif %}{% if q or language %} {% endif %}
+    </p>
+
+    <div class="custom-dropdown" id="sort-dropdown">
+      <button type="button" class="dropdown-button" id="sort-dropdown-btn">
+        <span id="sort-selected-option">Sort: Alphabetical</span>
+        <span class="arrow">▾</span>
+      </button>
+      <ul class="dropdown-menu" id="sort-dropdown-menu">
+        <li data-value="alphabetical">Alphabetical</li>
+        <li data-value="language">Language</li>
+        <li data-value="popularity">Most stories</li>
+      </ul>
+    </div>
+  </div>
+
+  {% if entries %}
+  <div class="entry-index">
+    {% for entry in entries %}
+    {% set e_script, e_rtl = detect_script(entry.word) %}
+    {% set story_count = story_counts.get(entry.id, 0) %}
+    <a href="{{ url_for('entry_detail', slug=entry.slug) }}"
+       class="entry-row"
+       data-word="{{ entry.word | lower }}"
+       data-language="{{ entry.language | lower }}"
+       data-story-count="{{ story_count }}">
+
+      <div class="entry-row-word">
+        <span class="script script-{{ e_script }}" dir="{{ 'rtl' if e_rtl else 'ltr' }}">{{ entry.word }}</span>
+        {% if entry.transliteration %}<span class="translit">{{ entry.transliteration }}</span>{% endif %}
+      </div>
+
+      <div class="entry-row-body">
+        <div class="entry-row-meta">
+          <span class="tag">{{ entry.language }}</span>
+          {% if entry.dialect %}<span class="tag tag-teal">{{ entry.dialect }}</span>{% endif %}
+        </div>
+        <p class="entry-row-snippet">
+          {% if entry.literal_definition %}{{ entry.literal_definition }}{% else %}{{ entry.story | truncate(160) }}{% endif %}
+        </p>
+        <p class="entry-row-foot">{{ story_count }} {{ "story" if story_count == 1 else "stories" }} shared</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty-note">
+    {% if q or language %}
+      <a href="{{ url_for('browse') }}">Clear your filters</a>, or <a href="{{ url_for('submit_page') }}">submit this word</a> yourself.
+    {% else %}
+      Be the first to <a href="{{ url_for('submit_page') }}">submit a word</a>.
+    {% endif %}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const dropdown = document.getElementById('sort-dropdown');
+  if (!dropdown) return;
+
+  const dropdownBtn = document.getElementById('sort-dropdown-btn');
+  const selectedOption = document.getElementById('sort-selected-option');
+  const menuItems = dropdown.querySelectorAll('.dropdown-menu li');
+  const entryIndex = document.querySelector('.entry-index');
+  const rows = Array.from(document.querySelectorAll('.entry-row'));
+
+  function sortRows(criteria) {
+    let sorted;
+    if (criteria === 'language') {
+      sorted = rows.slice().sort((a, b) => {
+        const langA = a.getAttribute('data-language') || '';
+        const langB = b.getAttribute('data-language') || '';
+        if (langA === langB) {
+          return (a.getAttribute('data-word') || '').localeCompare(b.getAttribute('data-word') || '');
+        }
+        return langA.localeCompare(langB);
+      });
+    } else if (criteria === 'popularity') {
+      sorted = rows.slice().sort((a, b) => {
+        const countA = parseInt(a.getAttribute('data-story-count') || '0', 10);
+        const countB = parseInt(b.getAttribute('data-story-count') || '0', 10);
+        if (countB === countA) {
+          return (a.getAttribute('data-word') || '').localeCompare(b.getAttribute('data-word') || '');
+        }
+        return countB - countA;
+      });
+    } else {
+      sorted = rows.slice().sort((a, b) =>
+        (a.getAttribute('data-word') || '').localeCompare(b.getAttribute('data-word') || '')
+      );
+    }
+    sorted.forEach(row => entryIndex.appendChild(row));
+  }
+
+  dropdownBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+  });
+
+  menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+      selectedOption.textContent = 'Sort: ' + item.textContent;
+      dropdown.classList.remove('open');
+      sortRows(item.dataset.value);
+    });
+  });
+
+  document.addEventListener('click', () => {
+    dropdown.classList.remove('open');
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.word }} — Zuban Daraz{% endblock %}
+{% block content %}
+{% set script, rtl = detect_script(entry.word) %}
+<div class="entry-detail">
+  <a class="entry-back" href="{{ url_for('browse') }}">← Back to the archive</a>
+
+  {% if request.args.get('edit_submitted') %}
+  <div class="notice-banner">Your edit has been submitted and is awaiting review. This page still shows the current approved version.</div>
+  {% endif %}
+  {% if request.args.get('story_submitted') %}
+  <div class="notice-banner">Thank you — your story is in the review queue and will appear here once it's approved.</div>
+  {% endif %}
+
+  <div class="entry-hero">
+    <div class="entry-word-card">
+      <div class="entry-word-row">
+        <p class="script script-{{ script }}" dir="{{ 'rtl' if rtl else 'ltr' }}">{{ entry.word }}</p>
+        <button type="button" class="icon-share" id="share-btn" data-url="{{ request.url }}" aria-label="Copy link to this entry">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">
+            <circle cx="12" cy="4" r="2"/><circle cx="4" cy="8" r="2"/><circle cx="12" cy="12" r="2"/>
+            <path d="M5.8 7.1l4.4-2.4M5.8 8.9l4.4 2.4"/>
+          </svg>
+          <span class="icon-share-tooltip" id="share-label">Copy link</span>
+        </button>
+      </div>
+      {% if entry.transliteration %}<p class="translit">{{ entry.transliteration }}</p>{% endif %}
+      <div class="card-tags">
+        <span class="tag">{{ entry.language }}</span>
+        {% if entry.dialect %}<span class="tag tag-teal">{{ entry.dialect }}</span>{% endif %}
+      </div>
+    </div>
+
+    <aside class="entry-facts-card" aria-label="At a glance">
+      <p class="facts-label">At a glance</p>
+      <dl class="facts-list">
+        <div class="facts-row">
+          <dt>Language</dt>
+          <dd>{{ entry.language }}</dd>
+        </div>
+        {% if entry.dialect %}
+        <div class="facts-row">
+          <dt>Dialect</dt>
+          <dd>{{ entry.dialect }}</dd>
+        </div>
+        {% endif %}
+        <div class="facts-row">
+          <dt>Script</dt>
+          <dd>{{ script|capitalize }}</dd>
+        </div>
+        {% if entry.source %}
+        <div class="facts-row">
+          <dt>Source</dt>
+          <dd>{{ entry.source }}</dd>
+        </div>
+        {% endif %}
+        <div class="facts-row facts-count">
+          <dt>Community stories</dt>
+          <dd>{{ stories|length }}</dd>
+        </div>
+      </dl>
+    </aside>
+  </div>
+
+  <div class="entry-tabs" role="tablist">
+    <button class="entry-tab active" data-tab="meaning" role="tab" aria-selected="true">Meaning &amp; use</button>
+    <button class="entry-tab" data-tab="origin" role="tab" aria-selected="false">Etymology</button>
+    <button class="entry-tab" data-tab="voices" role="tab" aria-selected="false">Community stories ({{ stories|length }})</button>
+  </div>
+
+  <div class="entry-panel" data-panel="meaning" role="tabpanel">
+    {% if entry.literal_definition %}
+      <p>{{ entry.literal_definition }}</p>
+    {% else %}
+      <p class="empty-note">No definition written yet.</p>
+    {% endif %}
+    {% if entry.origin %}
+      <h3>Origin</h3>
+      <p>{{ entry.origin }}</p>
+    {% endif %}
+  </div>
+
+  <div class="entry-panel" data-panel="origin" role="tabpanel" hidden>
+    {% if entry.etymology %}
+      <p>{{ entry.etymology }}</p>
+    {% else %}
+      <p class="empty-note">No etymology written yet.</p>
+    {% endif %}
+    {% if entry.source %}<p class="entry-source">Source: {{ entry.source }}</p>{% endif %}
+  </div>
+
+  <div class="entry-panel" data-panel="voices" role="tabpanel" hidden>
+    {% if stories %}
+      <div class="voice-grid">
+        {% for story in stories %}
+        <div class="voice-card voice-card-{{ loop.cycle('a', 'b', 'c') }}">
+          <span class="voice-quote-mark" aria-hidden="true">“</span>
+          <p class="voice-content">{{ story.content }}</p>
+          <div class="voice-byline">
+            <span class="voice-avatar">{{ (story.submitted_by[0] if story.submitted_by else "?")|upper }}</span>
+            <span class="voice-name">{{ story.submitted_by if story.submitted_by else "Anonymous" }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="voice-empty">
+        <p>No stories yet.</p>
+        <p class="voice-empty-sub">Be the first to share your experience with this word.</p>
+      </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('submit_story', slug=entry.slug) }}" class="story-form" id="story-form" hidden>
+      <p class="story-form-prompt">Where have you heard this word? Is there a memory attached to it?</p>
+      <div class="field">
+        <label for="content">Your story</label>
+        <textarea id="content" name="content" rows="6" required placeholder="Write your story or memory here…"></textarea>
+      </div>
+      <div class="field">
+        <label for="submitted_by">Your name (optional)</label>
+        <input type="text" id="submitted_by" name="submitted_by" maxlength="150" placeholder="Anonymous">
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Submit for review</button>
+        <button type="button" class="btn-cancel" id="story-cancel">Cancel</button>
+      </div>
+    </form>
+
+    <noscript>
+      <p style="margin-top:16px;">
+        <a class="link-btn" href="{{ url_for('submit_story', slug=entry.slug) }}">Share your story →</a>
+      </p>
+    </noscript>
+  </div>
+
+  <div class="entry-actions">
+    <button type="button" class="action-link action-link-accent" id="story-toggle">Share your story</button>
+    <a class="action-link" href="{{ url_for('edit_entry', slug=entry.slug) }}">Suggest an edit to this entry</a>
+  </div>
+  </div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const tabs = document.querySelectorAll(".entry-tab");
+  const panels = document.querySelectorAll(".entry-panel");
+
+  function activate(tabName) {
+    tabs.forEach(t => {
+      const isActive = t.dataset.tab === tabName;
+      t.classList.toggle("active", isActive);
+      t.setAttribute("aria-selected", isActive ? "true" : "false");
+    });
+    panels.forEach(p => p.hidden = p.dataset.panel !== tabName);
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => activate(tab.dataset.tab));
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("story_submitted")) activate("voices");
+
+  const storyToggle = document.getElementById("story-toggle");
+  const storyForm = document.getElementById("story-form");
+  const storyCancel = document.getElementById("story-cancel");
+
+  const shareBtn = document.getElementById("share-btn");
+  const shareLabel = document.getElementById("share-label");
+  shareBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(shareBtn.dataset.url).then(() => {
+      shareBtn.classList.add("copied");
+      shareLabel.textContent = "Copied!";
+      setTimeout(() => {
+        shareBtn.classList.remove("copied");
+        shareLabel.textContent = "Copy link";
+      }, 1800);
+    });
+  });
+
+  storyToggle.addEventListener("click", () => {
+      activate("voices");
+      storyForm.hidden = false;
+      document.getElementById("content").focus();
+      storyForm.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  storyCancel.addEventListener("click", () => {
+      storyForm.hidden = true;
+  });
+});
+</script>
+{% endblock %}

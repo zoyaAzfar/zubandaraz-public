@@ -1,0 +1,10 @@
+Flask
+Flask-SQLAlchemy
+Flask-HTTPAuth
+Werkzeug
+gunicorn
+python-dotenv
+psycopg2-binary
+sqlalchemy-libsql
+libsql
+python-slugify

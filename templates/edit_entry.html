@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Editing {{ entry.word }} — Zuban Daraz{% endblock %}
+{% block content %}
+<div class="entry-detail">
+  <a class="entry-back" href="{{ url_for('entry_detail', slug=entry.slug) }}">← Back to entry</a>
+
+  <div class="notice-banner">Changes are reviewed before going live. The current entry stays visible in the meantime.</div>
+
+  <div class="edit-head">
+    <h1>Editing <span class="word-quote">“{{ entry.word }}”</span></h1>
+  </div>
+
+  <form method="POST" action="{{ url_for('edit_entry', slug=entry.slug) }}">
+    <div class="field-row">
+      <div class="field">
+        <label for="word">Word</label>
+        <input type="text" id="word" name="word" value="{{ entry.word }}" maxlength="100">
+      </div>
+      <div class="field">
+        <label for="language">Language</label>
+        <input type="text" id="language" name="language" value="{{ entry.language }}" maxlength="100">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="dialect">Dialect</label>
+        <input type="text" id="dialect" name="dialect" value="{{ entry.dialect or '' }}" maxlength="100">
+      </div>
+      <div class="field">
+        <label for="origin">Origin</label>
+        <input type="text" id="origin" name="origin" value="{{ entry.origin or '' }}" maxlength="150">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="literal_definition">Literal definition</label>
+      <textarea id="literal_definition" name="literal_definition" rows="3">{{ entry.literal_definition or '' }}</textarea>
+    </div>
+
+    <div class="field">
+      <label for="etymology">Etymology</label>
+      <textarea id="etymology" name="etymology" rows="4">{{ entry.etymology or '' }}</textarea>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="source">Source</label>
+        <input type="text" id="source" name="source" value="{{ entry.source or '' }}" maxlength="250">
+      </div>
+      <div class="field">
+        <label for="submitted_by">Your name or email (optional)</label>
+        <input type="text" id="submitted_by" name="submitted_by" maxlength="150">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Submit edit for review</button>
+      <a href="{{ url_for('entry_detail', slug=entry.slug) }}" class="btn-cancel">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
